@@ -1,3 +1,2 @@
-// Central API config — reads from .env in dev, .env.production in build
-export const API    = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-export const AI_URL = import.meta.env.VITE_AI_URL  || 'http://localhost:8000';
+export const API = "https://attendance-calculator-y6ie.onrender.com/api";
+export const AI_URL = "https://attendance-calculator-1-3fi6.onrender.com";
