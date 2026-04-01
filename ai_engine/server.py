@@ -1,7 +1,11 @@
+import os
+# Force 1 thread to prevent OOM/CPU throttling on Render Free Tier
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+
 from fastapi import FastAPI, UploadFile, File
 import cv2
 import numpy as np
-from blur_logic import blur_faces
 from detect_logic import count_people
 from fastapi.middleware.cors import CORSMiddleware
 import base64
@@ -46,7 +50,7 @@ async def process_image(file: UploadFile = File(...)):
   _, data = count_people(img)
 
   # 4. Encode as base64 (slightly lower quality for speed/memory)
-  _, buffer   = cv2.imencode('.jpg', img, [cv2.WRITE_JPEG_QUALITY, 85])
+  _, buffer   = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 85])
   img_base64  = base64.b64encode(buffer).decode('utf-8')
 
   return {
