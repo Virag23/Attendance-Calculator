@@ -129,7 +129,7 @@ export default function LiveStream() {
 
     try {
       const res = await axios.post(`${AI_URL}/process`, fd, {
-        timeout: 60000, // 60 second timeout
+        timeout: 120000, // 2 minute timeout
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
