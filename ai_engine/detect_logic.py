@@ -2,8 +2,8 @@ from ultralytics import YOLO
 import cv2
 import numpy as np
 
-# yolov8m gives best accuracy/speed balance on CPU
-model = YOLO('yolov8m.pt')
+# YOLOv8n (Nano) — essential for 512MB RAM cloud hosting
+model = YOLO('yolov8n.pt')
 
 
 def _preprocess(image):
