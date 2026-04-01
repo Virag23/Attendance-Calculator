@@ -16,24 +16,37 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
+@app.get("/")
+def home():
+  return {"name": "AttendAI Engine", "status": "active"}
+
+@app.get("/health")
+def health():
+  return {"status": "ok"}
+
 @app.post("/process")
 async def process_image(file: UploadFile = File(...)):
   contents = await file.read()
   nparr    = np.frombuffer(contents, np.uint8)
   img      = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-  # 1. Brightness check
+  # 1. Memory Safety: Downscale if image is too large for 512MB RAM
+  h, w = img.shape[:2]
+  max_dim = 800
+  if h > max_dim or w > max_dim:
+      scale = max_dim / max(h, w)
+      new_w, new_h = int(w * scale), int(h * scale)
+      img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+
+  # 2. Brightness check
   avg_brightness = float(np.mean(img))
   low_light      = avg_brightness < 50
 
-  # 2. Count people (sliced inference)
+  # 3. Count people
   _, data = count_people(img)
 
-  # 3. Privacy Blurring Removed as requested
-  # Image remains clear for analysis and institutional records
-  
-  # 4. Encode original image as base64
-  _, buffer   = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 92])
+  # 4. Encode as base64 (slightly lower quality for speed/memory)
+  _, buffer   = cv2.imencode('.jpg', img, [cv2.WRITE_JPEG_QUALITY, 85])
   img_base64  = base64.b64encode(buffer).decode('utf-8')
 
   return {
@@ -45,10 +58,6 @@ async def process_image(file: UploadFile = File(...)):
     "image":          f"data:image/jpeg;base64,{img_base64}",
     "status":         "success",
   }
-
-@app.get("/health")
-def health():
-  return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn
